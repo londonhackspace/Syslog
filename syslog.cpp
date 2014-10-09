@@ -7,12 +7,46 @@ Syslog::Syslog() {
   _fac = LOG_USER;
 }
 
+// for checking that we can find the server name
+void Syslog::do_dns(const char *name, struct ip_addr *ipaddr, void *arg)
+{
+  ip_addr_t *result = (ip_addr_t *)arg;
+
+  /* BEWARE: lwip stack has been modified to set ipaddr
+   * to IPADDR_NONE if the lookup failed */
+  result->addr = ipaddr->addr;
+}
+
 // set server, our ident, and the facility to use.
 void Syslog::begin(const char *server, const char * ident, int fac) {
   _server = server;
   _fac = fac;
   _ident = ident;
 
+  ip_addr_t ip;
+  ip.addr = 0;
+  // 2 seconds
+  int timeout = 200;
+
+  dns_gethostbyname(_server, &ip, do_dns, &ip);
+
+  // in Udp.beginPacket there is no timeout
+  // so if we don't check this here then we will
+  // hang if we cant find a server to talk to.
+  while(!ip.addr) {
+    delay(10);
+    timeout--;
+    if (timeout < 0)
+     break;
+  }
+
+  if(ip.addr == IPADDR_NONE) {
+    Serial.print("unable to find ip for: ");
+    Serial.println(_server);
+
+    _server = NULL;
+    return;
+  }
   Udp.begin(1234);
 }
 
@@ -34,7 +68,7 @@ void Syslog::syslog(int pri, const char *message) {
   Serial.println(packetBuffer);
 
   if (_server == NULL) {
-     Serial.println("server not set");
+     Serial.println("syslog server not set");
      return;
   }
 

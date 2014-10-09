@@ -14,6 +14,9 @@
 #include <EthernetUdp.h>
 #endif
 
+#include "lwip/udp.h"
+#include <lwip/dns.h>
+
 #define	LOG_EMERG	0	/* system is unusable */
 #define	LOG_ALERT	1	/* action must be taken immediately */
 #define	LOG_CRIT	2	/* critical conditions */
@@ -66,6 +69,7 @@ class Syslog
     void syslog(int pri, const char *message);
     void setFacility(int fac);
   private:
+    static void do_dns(const char *name, struct ip_addr *ipaddr, void *arg);
     const char * _server;
     const char * _ident;
     int _fac;
