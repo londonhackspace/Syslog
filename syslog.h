@@ -69,8 +69,8 @@ class Syslog
     const char * _server;
     const char * _ident;
     int _fac;
-    #define PS 128 + 64
-    char packetBuffer[PS];
+    #define SYSLOGBUFFERSIZE 128 + 64
+    char packetBuffer[SYSLOGBUFFERSIZE];
     EthernetUDP Udp;
 };
 
