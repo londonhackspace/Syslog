@@ -5,6 +5,7 @@ Syslog::Syslog() {
   _server = NULL;
   _ident = NULL;
   _fac = LOG_USER;
+  online = true;
 }
 
 // for checking that we can find the server name
@@ -27,6 +28,9 @@ void Syslog::begin(const char *server, const char * ident, int fac) {
   ip.addr = 0;
   // 2 seconds
   int timeout = 200;
+
+  if (!online)
+   return;
 
   dns_gethostbyname(_server, &ip, do_dns, &ip);
 
@@ -55,6 +59,10 @@ void Syslog::setFacility(int fac) {
   _fac = fac;
 }
 
+void Syslog::offline() {
+  online = false;
+}
+
 // send a message with a priority
 void Syslog::syslog(int pri, const char *message) {
   // XXX test not very good here.
@@ -72,8 +80,10 @@ void Syslog::syslog(int pri, const char *message) {
      return;
   }
 
+  if (!online)
+   return;
+
   Udp.beginPacket(_server, 514);
   Udp.write(packetBuffer);
   Udp.endPacket();
 }
-

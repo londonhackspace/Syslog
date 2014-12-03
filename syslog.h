@@ -68,6 +68,7 @@ class Syslog
     void begin(const char *server, const char * ident, int fac);
     void syslog(int pri, const char *message);
     void setFacility(int fac);
+    void offline();
   private:
     static void do_dns(const char *name, struct ip_addr *ipaddr, void *arg);
     const char * _server;
@@ -76,6 +77,7 @@ class Syslog
     #define SYSLOGBUFFERSIZE 128 + 64
     char packetBuffer[SYSLOGBUFFERSIZE];
     EthernetUDP Udp;
+    boolean online;
 };
 
 #endif
